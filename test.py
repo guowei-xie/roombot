@@ -4,23 +4,23 @@ from lark.calendar import LarkCalendar
 from src.utils import convert_date_to_timestamp, convert_date_to_rfc3339
 
 # 读取配置文件config.ini
-config = configparser.ConfigParser()
-config.read('config.ini')
+# config = configparser.ConfigParser()
+# config.read('config.ini')
 
 # 获取飞书配置项
-appId = config['LARK']['appId']
-appSecret = config['LARK']['appSecret']
-logLevel = config['LARK']['logLevel']
+# appId = config['LARK']['appId']
+# appSecret = config['LARK']['appSecret']
+# logLevel = config['LARK']['logLevel']
 
-logLevel = {
-    'DEBUG': lark.LogLevel.DEBUG,
-    'INFO': lark.LogLevel.INFO,
-    'WARNING': lark.LogLevel.WARNING,
-    'ERROR': lark.LogLevel.ERROR
-}.get(logLevel, lark.LogLevel.INFO)
+# logLevel = {
+#     'DEBUG': lark.LogLevel.DEBUG,
+#     'INFO': lark.LogLevel.INFO,
+#     'WARNING': lark.LogLevel.WARNING,
+#     'ERROR': lark.LogLevel.ERROR
+# }.get(logLevel, lark.LogLevel.INFO)
 
 
-lark_calendar = LarkCalendar(appId, appSecret, logLevel)
+lark_calendar = LarkCalendar()
 # events = lark_calendar.get_calendar_events_list()
 # print(events)
 

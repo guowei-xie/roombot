@@ -10,7 +10,7 @@ from lark.base import LarkBase
 class LarkCalendar(LarkBase):
     """飞书日历操作类"""
     
-    def __init__(self, app_id, app_secret, log_level=None):
+    def __init__(self, log_level=None):
         """
         初始化飞书日历客户端
         
@@ -19,10 +19,7 @@ class LarkCalendar(LarkBase):
             app_secret: 飞书应用密钥
             log_level: 日志级别，默认继承LarkBase的默认值
         """
-        if log_level is None:
-            super().__init__(app_id, app_secret, logger_name='lark_calendar')
-        else:
-            super().__init__(app_id, app_secret, log_level, logger_name='lark_calendar')
+        super().__init__(logger_name='lark_calendar')
         self.calendar_id = self.get_primary_calendar_id()
 
     def get_primary_calendar(self):

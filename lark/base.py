@@ -3,11 +3,12 @@
 """
 import lark_oapi as lark
 from src.logger import get_logger
+import configparser
 
 class LarkBase:
     """飞书API基类，提供通用的客户端初始化和错误处理功能"""
     
-    def __init__(self, app_id, app_secret, log_level=lark.LogLevel.INFO, logger_name='lark_base'):
+    def __init__(self, logger_name='lark_base'):
         """
         初始化飞书客户端
         
@@ -19,13 +20,25 @@ class LarkBase:
         """
         # 初始化日志记录器
         self.logger = get_logger(logger_name)
-        self.logger.info(f"初始化飞书客户端，日志级别: {log_level}")
-        
+        self.logger.debug(f"初始化飞书客户端")
+
+        # 读取配置文件
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.app_id = config['APP']['appId']
+        self.app_secret = config['APP']['appSecret']
+        self.log_level = {
+            'DEBUG': lark.LogLevel.DEBUG,
+            'INFO': lark.LogLevel.INFO,
+            'WARNING': lark.LogLevel.WARNING,
+            'ERROR': lark.LogLevel.ERROR
+        }.get(config['APP']['logLevel'], lark.LogLevel.INFO)
+
         # 初始化客户端
         self.client = lark.Client.builder() \
-            .app_id(app_id) \
-            .app_secret(app_secret) \
-            .log_level(log_level) \
+            .app_id(self.app_id) \
+            .app_secret(self.app_secret) \
+            .log_level(self.log_level) \
             .build()
     
     def handle_response(self, response, operation_name):
