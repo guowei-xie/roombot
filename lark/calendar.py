@@ -1,28 +1,28 @@
 """
 飞书日历API模块
 """
-import lark_oapi as lark
 from lark_oapi.api.calendar.v4 import *
 from lark_oapi.api.vc.v1 import *
 import time
-import json
-from datetime import datetime
 from src.utils import convert_timestamp_to_date_str, convert_timestamp_to_rfc3339
 from lark.base import LarkBase
 
 class LarkCalendar(LarkBase):
     """飞书日历操作类"""
     
-    def __init__(self, app_id, app_secret, log_level=lark.LogLevel.INFO):
+    def __init__(self, app_id, app_secret, log_level=None):
         """
         初始化飞书日历客户端
         
         参数:
             app_id: 飞书应用ID
             app_secret: 飞书应用密钥
-            log_level: 日志级别，默认INFO
+            log_level: 日志级别，默认继承LarkBase的默认值
         """
-        super().__init__(app_id, app_secret, log_level, logger_name='lark_calendar')
+        if log_level is None:
+            super().__init__(app_id, app_secret, logger_name='lark_calendar')
+        else:
+            super().__init__(app_id, app_secret, log_level, logger_name='lark_calendar')
         self.calendar_id = self.get_primary_calendar_id()
 
     def get_primary_calendar(self):
