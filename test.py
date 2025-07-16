@@ -1,7 +1,7 @@
 import configparser
 import lark_oapi as lark
 from lark.calendar import LarkCalendar
-from src.utils import convert_date_to_timestamp
+from src.utils import convert_date_to_timestamp, convert_date_to_rfc3339
 
 # 读取配置文件config.ini
 config = configparser.ConfigParser()
@@ -24,8 +24,8 @@ lark_calendar = LarkCalendar(appId, appSecret, logLevel)
 # events = lark_calendar.get_calendar_events_list()
 # print(events)
 
-start_time = '2025-07-13 22:00:00'
-end_time = '2025-07-13 23:00:00'
+start_time = '2025-07-16 15:00:00'
+end_time = '2025-07-16 19:00:00'
 start_time_timestamp = convert_date_to_timestamp(start_time)
 end_time_timestamp = convert_date_to_timestamp(end_time)
 
@@ -33,5 +33,9 @@ end_time_timestamp = convert_date_to_timestamp(end_time)
 
 # lark_calendar.create_calendar_event("测试日程3", start_time_timestamp, end_time_timestamp)
 
-rooms = lark_calendar.get_meeting_room_list()
-print(rooms)
+# rooms = lark_calendar.get_meeting_room_list()
+# print(rooms)
+
+room_id = 'omm_dc8b0dae81055b94161f790e37427d1f'
+busy_status = lark_calendar.get_meeting_room_busy_status(room_id, start_time_timestamp, end_time_timestamp)
+print(busy_status)
