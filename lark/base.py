@@ -62,3 +62,33 @@ class LarkBase:
         
         self.logger.debug(f"成功{operation_name}")
         return response
+    
+    def get_wiki_node_space(self, token, obj_type):
+        """
+        获取Wiki节点所在的空间信息
+        
+        参数:
+            token: 节点token，如文档token
+            obj_type: 对象类型，如'docx'、'sheet'等
+            
+        返回:
+            成功时返回节点空间信息
+            
+        异常:
+            失败时抛出Exception异常
+        """
+        from lark_oapi.api.wiki.v2 import GetNodeSpaceRequest
+        
+        self.logger.debug(f"获取Wiki节点空间信息，token: {token}, obj_type: {obj_type}")
+        
+        # 构造请求对象
+        request = GetNodeSpaceRequest.builder() \
+            .token(token) \
+            .obj_type(obj_type) \
+            .build()
+        
+        # 发起请求
+        response = self.client.wiki.v2.space.get_node(request)
+        
+        # 处理响应
+        return self.handle_response(response, "获取Wiki节点空间信息")
