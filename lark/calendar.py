@@ -4,8 +4,9 @@
 from lark_oapi.api.calendar.v4 import *
 from lark_oapi.api.vc.v1 import *
 import time
-from src.utils import convert_timestamp_to_date_str, convert_timestamp_to_rfc3339
+from src.utils import convert_timestamp_to_date_str, convert_timestamp_to_rfc3339, str_to_list
 from lark.base import LarkBase
+import configparser
 
 class LarkCalendar(LarkBase):
     """飞书日历操作类"""
@@ -21,6 +22,9 @@ class LarkCalendar(LarkBase):
         """
         super().__init__(logger_name='lark_calendar')
         self.calendar_id = self.get_primary_calendar_id()
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.room_level_id = str_to_list(config['ROOM']['roomLevelId'])
 
     def get_primary_calendar(self):
         """
@@ -145,6 +149,7 @@ class LarkCalendar(LarkBase):
         self.logger.info(f"成功创建日程，ID: {response.data.event.event_id}, 标题: {response.data.event.summary}, 时间: {start_time_str} - {end_time_str}")
         return response.data.event.event_id
 
+
     def get_meeting_room_list(self):
         """
         获取会议室列表
@@ -154,7 +159,7 @@ class LarkCalendar(LarkBase):
         """
         request = ListRoomRequest.builder() \
             .page_size(100) \
-            .room_level_id("omb_2a0a8a9abede15fb3c69405c7053e742") \
+            .room_level_id(self.room_level_id) \
             .build()
         response = self.client.vc.v1.room.list(request)
         self.handle_response(response, "获取会议室列表")
@@ -277,4 +282,3 @@ class LarkCalendar(LarkBase):
         
         self.logger.info(f"成功添加日程会议室, 会议室ID: {room_id}, 日程ID: {event_id}")
             
-                    

@@ -73,3 +73,19 @@ def convert_timestamp_to_rfc3339(timestamp):
     except Exception as e:
         logger.error(f"时间戳转换失败: {timestamp}, 错误: {str(e)}")
         raise
+
+def str_to_list(str_value):
+    """
+    将字符串形式的列表转换为真正的列表
+    
+    参数:
+        str_value: 字符串形式的列表，如 '["a","b"]' 或 'a,b'
+        
+    返回:
+        list: 转换后的列表
+    """
+    # 去除首尾的方括号和引号
+    cleaned = str_value.strip('[]"\'')
+    # 按逗号分割并去除每个元素两边的空格和引号
+    return [item.strip().strip('"\'') for item in cleaned.split(',') if item.strip()]
+                    

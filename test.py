@@ -21,7 +21,7 @@ from lark.bitable import LarkBitable
 # }.get(logLevel, lark.LogLevel.INFO)
 
 
-# lark_calendar = LarkCalendar()
+lark_calendar = LarkCalendar()
 # events = lark_calendar.get_calendar_events_list()
 # print(events)
 
@@ -35,11 +35,12 @@ from lark.bitable import LarkBitable
 # lark_calendar.create_calendar_event("测试日程3", start_time_timestamp, end_time_timestamp)
 
 # rooms = lark_calendar.get_meeting_room_list()
-# print(rooms)
+room_levels = lark_calendar.get_meeting_room_level_list()
+print(room_levels)
 
 # room_id = 'omm_dc8b0dae81055b94161f790e37427d1f'
 # busy_status = lark_calendar.get_meeting_room_busy_status(room_id, start_time_timestamp, end_time_timestamp)
 # print(busy_status)
 
-bitable = LarkBitable()
-print(bitable.get_room_config_table())
+# bitable = LarkBitable()
+# print(bitable.get_room_config_table())
