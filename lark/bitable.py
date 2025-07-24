@@ -94,7 +94,7 @@ class LarkBitable(LarkBase):
             }
             serializable_records.append(record_dict)
             
-        return json.dumps(serializable_records, ensure_ascii=False, indent=4)
+        return serializable_records
     
     def _get_records_page(self, app_token, table_id, view_id=None, page_token=None, page_size=100):
         """
@@ -186,20 +186,51 @@ class LarkBitable(LarkBase):
         """
         self.logger.debug(f"批量创建多维表格记录，表格ID: {table_id}，记录数: {len(records_fields)}")
         
-        # 构造记录对象列表
-        records = []
         for fields in records_fields:
-            records.append(AppTableRecord.builder().fields(fields).build())
+            self.create_record(app_token, table_id, fields)
+
+    def extract_record_ids(self, json_data):
+        """
+        从fields中提取所有record_id
         
-        # 构造请求对象
-        request = BatchCreateAppTableRecordRequest.builder() \
+        参数:
+            json_data: 包含记录数据的JSON列表，每个记录应有record_id字段
+            
+        返回:
+            包含所有record_id的列表
+        """
+        record_ids = []
+              
+        for record in json_data:
+            if isinstance(record, dict) and "record_id" in record:
+                record_ids.append(record["record_id"])
+        
+        return record_ids
+
+    def batch_delete_records(self, app_token, table_id):
+        """
+        批量删除多维表格记录
+        """
+        records = self.get_all_records_json(app_token, table_id)
+        record_ids = self.extract_record_ids(records)
+
+        if not record_ids:
+            return
+        
+        request = BatchDeleteAppTableRecordRequest.builder() \
             .app_token(app_token) \
             .table_id(table_id) \
-            .request_body(BatchCreateAppTableRecordRequestBody.builder()
-                .records(records)
+            .request_body(BatchDeleteAppTableRecordRequestBody.builder() \
+                .records(record_ids) \
                 .build()) \
             .build()
         
-        response = self.client.bitable.v1.app_table_record.batch_create(request)
-        
-        return self.handle_response(response, "批量创建多维表格记录")
+        response = self.client.bitable.v1.app_table_record.batch_delete(request)
+        return self.handle_response(response, "批量删除多维表格记录")
+    
+    def update_room_config_table(self, list_dict):
+        """
+        更新会议室配置表中的记录
+        """
+        self.batch_delete_records(self.bitable_token, self.room_config_table_id)
+        self.batch_create_records(self.bitable_token, self.room_config_table_id, list_dict)

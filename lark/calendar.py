@@ -150,7 +150,7 @@ class LarkCalendar(LarkBase):
         return response.data.event.event_id
 
 
-    def get_meeting_room_list(self):
+    def get_meeting_room_list(self, default_status="ON"):
         """
         获取会议室列表
         
@@ -169,7 +169,8 @@ class LarkCalendar(LarkBase):
             for room in response.data.rooms:
                 rooms.append({
                     "room_id": room.room_id,
-                    "room_name": room.name
+                    "room_name": room.name,
+                    "room_status": default_status
                 })
         self.logger.info(f"成功获取会议室列表, 共{len(rooms)}个会议室")
         return rooms

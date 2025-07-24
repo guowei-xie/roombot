@@ -57,7 +57,7 @@ def convert_timestamp_to_date_str(timestamp):
 # 如：1721136000 -> 2025-07-16T13:00:00+08:00
 def convert_timestamp_to_rfc3339(timestamp):
     """
-    将时间戳转换为RFC3339格式
+    将时间戳转换为RFC3339格式，当时间戳为毫秒时，需要除以1000
     
     Args:
         timestamp: 时间戳
@@ -65,8 +65,11 @@ def convert_timestamp_to_rfc3339(timestamp):
     Returns:
         str: RFC3339格式的时间字符串
     """
+    if timestamp > 10000000000:
+        timestamp = timestamp / 1000
+
     try:
-        date = datetime.fromtimestamp(timestamp)
+        date = datetime.fromtimestamp(timestamp) 
         rfc3339 = date.strftime("%Y-%m-%dT%H:%M:%S+08:00")
         logger.debug(f"时间戳转换成功: {timestamp} -> {rfc3339}")
         return rfc3339
