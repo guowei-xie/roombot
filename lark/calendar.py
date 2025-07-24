@@ -231,6 +231,25 @@ class LarkCalendar(LarkBase):
         """
         busy_periods = self.get_meeting_room_busy_periods(room_id, time_min, time_max)
         return len(busy_periods) > 0
+    
+    def get_meeting_room_available_list(self, room_ids, time_min, time_max):
+        """
+        批量检查会议室忙闲状态，并返回仅可用会议室ID列表
+        
+        参数:
+            room_ids: 会议室ID列表
+            time_min: 开始时间戳
+            time_max: 结束时间戳
+
+        返回:
+            list: 仅可用会议室ID列表
+        """
+        for room_id in room_ids:
+            busy_status = self.get_meeting_room_busy_status(room_id, time_min, time_max)
+            if busy_status:
+                room_ids.remove(room_id)
+        return room_ids
+        
 
     def add_calendar_event_user(self, event_id, user_id):
         """

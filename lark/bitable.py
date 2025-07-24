@@ -132,16 +132,20 @@ class LarkBitable(LarkBase):
     
     def get_task_table(self):
         """
-        获取任务表中的所有记录
+        获取任务表中的记录（仅返回“任务状态”为“ON”的记录）
         """
         table_records = self.get_all_records_json(self.bitable_token, self.task_table_id)
+        # 筛选“任务状态”为“ON”的记录
+        table_records = [record for record in table_records if record["fields"]["任务状态"] == "ON"]
         return table_records
     
     def get_room_config_table(self):
         """
-        获取会议室配置表中的所有记录
+        获取会议室配置表中的记录（仅返回“room_status”为“ON”的记录）
         """
         table_records = self.get_all_records_json(self.bitable_token, self.room_config_table_id)
+        # 筛选“room_status”为“ON”的记录
+        table_records = [record for record in table_records if record["fields"]["room_status"] == "ON"]
         return table_records
 
     # 新增多维表记录
