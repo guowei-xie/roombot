@@ -21,6 +21,7 @@ class LarkBitable(LarkBase):
         config.read('config.ini')
         self.bitable_token = config['BITABLE']['bitableToken']
         self.task_table_id = config['BITABLE']['taskTableId']
+        self.completed_task_table_id = config['BITABLE']['completedTaskTableId']
         self.room_config_table_id = config['BITABLE']['roomConfigTableId']
         self.wiki = config['BITABLE']['wiki']
         if self.wiki:
@@ -146,6 +147,13 @@ class LarkBitable(LarkBase):
         table_records = self.get_all_records_json(self.bitable_token, self.room_config_table_id)
         # 筛选“room_status”为“ON”的记录
         table_records = [record for record in table_records if record["fields"]["room_status"] == "ON"]
+        return table_records
+
+    def get_completed_task_list(self):
+        """
+        获取已完成任务表中的记录
+        """
+        table_records = self.get_all_records_json(self.bitable_token, self.completed_task_table_id)
         return table_records
 
     # 新增多维表记录

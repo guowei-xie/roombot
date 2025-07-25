@@ -77,6 +77,14 @@ def convert_timestamp_to_rfc3339(timestamp):
         logger.error(f"时间戳转换失败: {timestamp}, 错误: {str(e)}")
         raise
 
+def convert_timestamp_to_date(timestamp):
+    """
+    将时间戳转换为日期，当时间戳为毫秒时，需要除以1000
+    """
+    if timestamp > 10000000000:
+        timestamp = timestamp / 1000
+    return datetime.fromtimestamp(timestamp)
+
 def str_to_list(str_value):
     """
     将字符串形式的列表转换为真正的列表
