@@ -153,25 +153,30 @@ class LarkCalendar(LarkBase):
     def get_meeting_room_list(self, default_status="ON"):
         """
         获取会议室列表
-        
+
         返回:
             list: 会议室列表，每个元素包含room_id和room_name
         """
-        request = ListRoomRequest.builder() \
-            .page_size(100) \
-            .room_level_id(self.room_level_id) \
-            .build()
-        response = self.client.vc.v1.room.list(request)
-        self.handle_response(response, "获取会议室列表")
-
-        rooms = [] 
-        if response.data and response.data.rooms:
-            for room in response.data.rooms:
-                rooms.append({
-                    "room_id": room.room_id,
-                    "room_name": room.name,
-                    "room_status": default_status
-                })
+        rooms = []
+        if isinstance(self.room_level_id, list):
+            room_level_ids = self.room_level_id
+        else:
+            room_level_ids = [self.room_level_id]
+        
+        for level_id in room_level_ids:
+            request = ListRoomRequest.builder() \
+                .page_size(100) \
+                .room_level_id(level_id) \
+                .build()
+            response = self.client.vc.v1.room.list(request)
+            self.handle_response(response, f"获取会议室列表 (room_level_id: {level_id})")
+            if response.data and response.data.rooms:
+                for room in response.data.rooms:
+                    rooms.append({
+                        "room_id": room.room_id,
+                        "room_name": room.name,
+                        "room_status": default_status
+                    })
         self.logger.info(f"成功获取会议室列表, 共{len(rooms)}个会议室")
         return rooms
 
