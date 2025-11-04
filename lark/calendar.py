@@ -195,7 +195,7 @@ class LarkCalendar(LarkBase):
         返回:
             list: 会议室忙碌时间段列表，每个元素包含start_time和end_time
         """
-        self.logger.debug(f"查询会议室忙闲状态: 会议室ID {room_id}, 时间: {time_min} - {time_max}")
+        self.logger.debug(f"查询会议室忙闲状态: 会议室ID {room_id}, 时间: {convert_timestamp_to_date_str(time_min)} - {convert_timestamp_to_date_str(time_max)}")
         time_min = convert_timestamp_to_rfc3339(time_min)
         time_max = convert_timestamp_to_rfc3339(time_max)
 
@@ -243,7 +243,7 @@ class LarkCalendar(LarkBase):
     def get_meeting_room_available_list(self, room_ids, time_min, time_max):
         """
         批量检查会议室忙闲状态，并返回仅可用会议室ID列表
-        
+
         参数:
             room_ids: 会议室ID列表
             time_min: 开始时间戳
@@ -252,11 +252,12 @@ class LarkCalendar(LarkBase):
         返回:
             list: 仅可用会议室ID列表
         """
+        available_room_ids = []
         for room_id in room_ids:
             busy_status = self.get_meeting_room_busy_status(room_id, time_min, time_max)
-            if busy_status:
-                room_ids.remove(room_id)
-        return room_ids
+            if not busy_status:
+                available_room_ids.append(room_id)
+        return available_room_ids
         
 
     def add_calendar_event_user(self, event_id, user_id):

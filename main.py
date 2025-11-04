@@ -3,15 +3,20 @@ from lark.calendar import LarkCalendar
 from time import sleep
 from src.logger import logger
 from src.helper import parse_task_table, remove_completed_task, preference_selection, room_name_to_room_id
+import configparser
 
 lark_bitable = LarkBitable()
 lark_calendar = LarkCalendar()
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+frequency = int(config['POLLING']['frequency']) 
 
 while True:
     # 获取任务表
     task_table = lark_bitable.get_task_table()
     if not task_table:
-        sleep(600)
+        sleep(frequency)
         continue
 
     # 获取会议室配置表
@@ -64,5 +69,5 @@ while True:
         # 任务完成记录
         lark_bitable.create_completed_task_record(task, selected_room_id, event_id, room_config_table)
     
-    sleep(600)
+    sleep(frequency)
 

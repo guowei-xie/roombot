@@ -86,12 +86,19 @@ def remove_completed_task(task_list, completed_task_list):
     移除已完成的任务
     已完成任务表中，以任务ID、开始时间、结束时间 为唯一标识，如果任务表中存在相同标识的记录，则移除任务表中的记录
     """
+    # 构造一个set存放所有已完成任务的唯一标识
+    completed_set = set(
+        (completed_task["fields"]["任务ID"], completed_task["fields"]["日程开始时间"], completed_task["fields"]["日程结束时间"])
+        for completed_task in completed_task_list
+    )
+
+    # 用新列表保存未完成的任务，避免在遍历时直接remove造成漏查
+    filtered_task_list = []
     for task in task_list:
-        for completed_task in completed_task_list:
-            if task["task_id"] == completed_task["fields"]["任务ID"] and task["task_start_time"] == completed_task["fields"]["日程开始时间"] and task["task_end_time"] == completed_task["fields"]["日程结束时间"]:
-                task_list.remove(task)
-                break
-    return task_list
+        key = (task["task_id"], task["task_start_time"], task["task_end_time"])
+        if key not in completed_set:
+            filtered_task_list.append(task)
+    return filtered_task_list
 
 
 def preference_selection(room_list, preference_room_list, allow_backup_room="YES"):
