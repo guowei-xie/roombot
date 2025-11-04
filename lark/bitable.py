@@ -5,6 +5,8 @@ from lark_oapi.api.bitable.v1 import *
 from lark.base import LarkBase
 import configparser
 import json
+from src.helper import room_id_to_room_name
+from src.utils import convert_timestamp_to_date_str
 
 class LarkBitable(LarkBase):
     """飞书多维表格操作类"""
@@ -68,7 +70,7 @@ class LarkBitable(LarkBase):
             page_token = records_page.data.page_token
             self.logger.debug(f"获取下一页记录，页标记: {page_token}")
         
-        self.logger.info(f"成功获取所有记录，共 {len(all_records)} 条")
+        self.logger.debug(f"成功获取所有记录，共 {len(all_records)} 条")
         return all_records
 
     def get_all_records_json(self, app_token=None, table_id=None, view_id=None, page_size=100):
@@ -246,3 +248,24 @@ class LarkBitable(LarkBase):
         """
         self.batch_delete_records(self.bitable_token, self.room_config_table_id)
         self.batch_create_records(self.bitable_token, self.room_config_table_id, list_dict)
+
+    def create_completed_task_record(self, task, selected_room_id, event_id, room_config_table):
+        """
+        创建已完成任务记录
+        """
+
+        room_name_list = room_id_to_room_name([selected_room_id], room_config_table)
+        room_name = room_name_list[0] if room_name_list else ""
+
+        fields = {
+            "任务ID": task["task_id"],
+            "日程ID": event_id,
+            "日程标题": task["task_name"],
+            "日程开始时间": task["task_start_time"],
+            "日程结束时间": task["task_end_time"],
+            "会议室名称": room_name,
+            "会议室ID": selected_room_id,
+            "预订人名称": task["task_booker_name"],
+            "预订人ID": task["task_booker_id"]
+        }
+        self.create_record(self.bitable_token, self.completed_task_table_id, fields)

@@ -46,6 +46,9 @@ def convert_timestamp_to_date_str(timestamp):
         str: 日期时间字符串，格式为"%Y-%m-%d %H:%M:%S"
     """
     try:
+        # 处理毫秒时间戳，若timestamp过大则除以1000
+        if timestamp > 10000000000:
+            timestamp = timestamp / 1000
         date_str = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
         logger.debug(f"时间戳转换成功: {timestamp} -> {date_str}")
         return date_str

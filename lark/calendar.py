@@ -124,6 +124,9 @@ class LarkCalendar(LarkBase):
         start_time_str = convert_timestamp_to_date_str(start_time)
         end_time_str = convert_timestamp_to_date_str(end_time)
         self.logger.info(f"创建日程: {title}, 时间: {start_time_str} - {end_time_str}")
+
+        start_time = str(int(start_time/1000))
+        end_time = str(int(end_time/1000))
         
         request = CreateCalendarEventRequest.builder() \
             .calendar_id(self.calendar_id) \
@@ -177,7 +180,7 @@ class LarkCalendar(LarkBase):
                         "room_name": room.name,
                         "room_status": default_status
                     })
-        self.logger.info(f"成功获取会议室列表, 共{len(rooms)}个会议室")
+        self.logger.debug(f"成功获取会议室列表, 共{len(rooms)}个会议室")
         return rooms
 
     def get_meeting_room_busy_periods(self, room_id, time_min, time_max):
@@ -219,7 +222,7 @@ class LarkCalendar(LarkBase):
                     "end_time": freebusy.end_time
                 })
                     
-        self.logger.info(f"会议室 {room_id} 在指定时间段内有 {len(busy_periods)} 个忙碌时段")
+        self.logger.debug(f"会议室 {room_id} 在指定时间段内有 {len(busy_periods)} 个忙碌时段")
         return busy_periods
     
     def get_meeting_room_busy_status(self, room_id, time_min, time_max):
@@ -268,18 +271,25 @@ class LarkCalendar(LarkBase):
             .calendar_id(self.calendar_id) \
             .event_id(event_id) \
             .user_id_type("open_id") \
-            .request_body(CreateCalendarEventAttendeeRequestBody.builder() \
-                .attendees([CalendarEventAttendee.builder() \
-                    .type("user") \
-                    .is_optional(True) \
-                    .user_id(user_id) \
-                    .need_notification(True) \
-                    .build()]) \
-                .build()) \
+            .request_body(
+                CreateCalendarEventAttendeeRequestBody.builder()
+                .attendees([
+                    CalendarEventAttendee.builder()
+                    .type("user")
+                    .is_optional(True)
+                    .user_id(user_id)
+                    # 可选字段：如chat_id/room_id/third_party_email/operate_id/approval_reason/resource_customization等，视需要补充
+                    .build()
+                ])
+                .need_notification(True)  # 控制是否通知参与人
+                .build()
+            ) \
             .build()
         response = self.client.calendar.v4.calendar_event_attendee.create(request)
         self.handle_response(response, "添加日程参与人")
-        
+        if response.msg != "success":
+            self.logger.error(f"添加日程参与人失败, 用户ID: {user_id}, 日程ID: {event_id}, 错误信息: {response.msg}")
+            return False
         self.logger.info(f"成功添加日程参与人, 用户ID: {user_id}, 日程ID: {event_id}")
         
     def add_calendar_event_room(self, event_id, room_id):
@@ -290,20 +300,26 @@ class LarkCalendar(LarkBase):
             event_id: 日程ID
             room_id: 会议室ID
         """
-        request = CreateCalendarEventAttendeeRequest.builder() \
-            .calendar_id(self.calendar_id) \
-            .event_id(event_id) \
-            .user_id_type("open_id") \
-            .request_body(CreateCalendarEventAttendeeRequestBody.builder() \
-                .attendees([CalendarEventAttendee.builder() \
-                    .type("resource") \
-                    .room_id(room_id) \
-                    .approval_reason("该预订审批自动发出，如有异常，请联系 @商业智能-谢国伟") \
-                    .build()]) \
-                .build()) \
-            .build()
-        response = self.client.calendar.v4.calendar_event_attendee.create(request)
-        self.handle_response(response, "添加日程会议室")
-        
-        self.logger.info(f"成功添加日程会议室, 会议室ID: {room_id}, 日程ID: {event_id}")
-            
+        try:
+            request = CreateCalendarEventAttendeeRequest.builder() \
+                .calendar_id(self.calendar_id) \
+                .event_id(event_id) \
+                .user_id_type("open_id") \
+                .request_body(CreateCalendarEventAttendeeRequestBody.builder() \
+                    .attendees([CalendarEventAttendee.builder() \
+                        .type("resource") \
+                        .room_id(room_id) \
+                        .approval_reason("该预订审批自动发出，如有异常，请联系 @商业智能-谢国伟") \
+                        .build()]) \
+                    .build()) \
+                .build()
+            response = self.client.calendar.v4.calendar_event_attendee.create(request)
+            self.handle_response(response, "添加日程会议室")
+            if response.msg != "success":
+                self.logger.error(f"添加日程会议室失败, 会议室ID: {room_id}, 日程ID: {event_id}, 错误信息: {response.msg}")
+                return False
+            self.logger.info(f"成功添加日程会议室, 会议室ID: {room_id}, 日程ID: {event_id}")
+        except Exception as e:
+            self.logger.error(f"添加日程会议室失败, 会议室ID: {room_id}, 日程ID: {event_id}, 错误信息: {e}")
+            return False
+        return True

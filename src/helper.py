@@ -1,3 +1,6 @@
+from typing import Any
+
+
 from datetime import datetime
 
 def parse_task_table(task_table):
@@ -18,6 +21,8 @@ def parse_task_table(task_table):
         task_end_time = task["fields"]["日程结束时间"]
         task_cycle = task["fields"]["循环周期"]
         task_cycle_num = int(task_cycle.split("每")[1][:-1])
+        task_booker_id = task["fields"]["预订人"]["id"]
+        task_booker_name = task["fields"]["预订人"]["name"]
 
         task_duration = task_end_time - task_start_time
         task_start_date = datetime.fromtimestamp(task_start_time / 1000).date()
@@ -57,7 +62,9 @@ def parse_task_table(task_table):
                 "task_start_time": next_task_start_time_t0,
                 "task_end_time": next_task_end_time_t0,
                 "preferred_room_ids": task["fields"].get("优先预定偏好会议室", []),
-                "allow_backup_room": task["fields"].get("允许预定非偏好会议室", "YES")
+                "allow_backup_room": task["fields"].get("允许预定非偏好会议室", "YES"),
+                "task_booker_id": task_booker_id,
+                "task_booker_name": task_booker_name
             })
 
         if is_t1_later_than_current and t1_days_diff <= 7:
@@ -67,11 +74,12 @@ def parse_task_table(task_table):
                 "task_start_time": next_task_start_time_t1,
                 "task_end_time": next_task_end_time_t1,
                 "preferred_room_ids": task["fields"].get("优先预定偏好会议室", []),
-                "allow_backup_room": task["fields"].get("允许预定非偏好会议室", "YES")
+                "allow_backup_room": task["fields"].get("允许预定非偏好会议室", "YES"),
+                "task_booker_id": task_booker_id,
+                "task_booker_name": task_booker_name
             })
 
     return task_list
-    
     
 def remove_completed_task(task_list, completed_task_list):
     """
@@ -86,12 +94,90 @@ def remove_completed_task(task_list, completed_task_list):
     return task_list
 
 
-    
-    
-    
-
-def preference_selection(room_list, preference_room_list, allow_backup_room=True):
+def preference_selection(room_list, preference_room_list, allow_backup_room="YES"):
     """
     根据可用会议室列表和偏好会议室列表以及是否允许偏好外的预定，选择出最优会议室，并返回会议室ID
     """
-    pass
+    # room_list为空时，直接返回None
+    if not room_list:
+        return None
+    # 校验allow_backup_room是否为"YES"或"NO"，如果不是，则默认置为"YES"
+    if allow_backup_room not in ["YES", "NO"]:
+        allow_backup_room = "YES"
+
+    # 取偏好列表与全部列表的交集为set1，顺序与preference_room_list一致
+    set1 = [room for room in preference_room_list if room in room_list]
+    # set2为room_list去除set1中的元素（保留原有顺序）
+    set2 = [room for room in room_list if room not in set1]
+
+    # 当allow_backup_room为"NO"时  
+    if allow_backup_room == "NO" and set1:
+        # 若set1不为空，返回set1的第一个元素
+        return set1[0]
+    elif allow_backup_room == "NO" and not set1:
+        # 若set1为空，则返回None
+        return None
+
+    # 当allow_backup_room为"YES"时
+    if allow_backup_room == "YES" and set1:
+        # 优先返回set1的第一个元素
+        return set1[0]
+    elif allow_backup_room == "YES" and not set1:
+        # 若set1为空，则返回set2的第一个元素
+        return set2[0] if set2 else None
+    
+# room名称列表转为room_id列表
+def room_name_to_room_id(room_name_list, room_config_table):
+    """
+    将room名称列表转为room_id列表，输出顺序与输入的room_name_list一致
+    room_name_list: 会议室名称列表
+    room_config_table: 会议室配置表
+    返回:
+        list: 会议室ID列表
+    """
+    if not room_config_table or not room_name_list:
+        return []
+
+    # 先构造一个room_name到room_id的映射
+    name_to_id = {}
+    for record in room_config_table:
+        fields = record.get("fields", {})
+        room_name = fields.get("room_name")
+        room_id = fields.get("room_id")
+        if room_name is not None and room_id is not None:
+            name_to_id[room_name] = room_id
+
+    # 按照room_name_list顺序输出
+    room_id_list = []
+    for room_name in room_name_list:
+        if room_name in name_to_id:
+            room_id_list.append(name_to_id[room_name])
+    return room_id_list
+
+# room_id列表转为room_name列表
+def room_id_to_room_name(room_id_list, room_config_table):
+    """
+    将room_id列表转为room_name列表，输出顺序与输入的room_id_list一致
+    room_id_list: 会议室ID列表
+    room_config_table: 会议室配置表
+    返回:
+        list: 会议室名称列表
+    """
+    if not room_config_table or not room_id_list:
+        return []
+
+    # 先构造一个room_id到room_name的映射
+    id_to_name = {}
+    for record in room_config_table:
+        fields = record.get("fields", {})
+        room_id = fields.get("room_id")
+        room_name = fields.get("room_name")
+        if room_id is not None and room_name is not None:
+            id_to_name[room_id] = room_name
+
+    # 按照room_id_list顺序输出
+    room_name_list = []
+    for room_id in room_id_list:
+        if room_id in id_to_name:
+            room_name_list.append(id_to_name[room_id])
+    return room_name_list
