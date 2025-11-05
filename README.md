@@ -1,6 +1,6 @@
-## Roombot —— 飞书会议室自动预约机器人
+## RoomHunter —— 飞书会议室神抢手
 
-Roombot 是一个基于飞书开放平台的自动化机器人，按预设规则从飞书多维表格读取任务，查询会议室忙闲并自动创建日程、添加会议室与参会人，支持持续后台运行。
+这是一个基于飞书开放平台的自动化机器人，按预设规则从飞书多维表格读取任务，查询会议室忙闲并自动创建日程、添加会议室与参会人，支持持续后台运行抢订。
 
 ### 功能特性
 - 自动读取“任务表”（开启状态）并计算下一次需要预约的时间段（支持每X周循环、7天窗口限制）
@@ -74,7 +74,7 @@ roomLevelId = ["<room_level_id_1>", "<room_level_id_2>"]
 
 提示：
 - `bitableToken` 如表位于知识库（Wiki）中，需配合 `wiki=True`，程序会自动解析为空间对象 token。
-- `roomLevelId` 可通过调用“查询会议室列表”接口（详见飞书API文档：https://open.feishu.cn/document/server-docs/vc-v1/room/list）返回的 `room_level_id` 获取，并支持配置多个。
+- `roomLevelId` 可通过调用“查询会议室列表”接口 [详见API文档](https://open.feishu.cn/document/server-docs/vc-v1/room/list) 返回的 `room_level_id` 获取，并支持配置多个。
 
 ### 4) 初始化会议室配置表
 首次运行前建议初始化会议室配置表：
